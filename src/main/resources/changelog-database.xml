@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <property name="blob_type" value="bytea" dbms="postgresql"/>
+    <property name="blob_type" value="LONGVARBINARY" dbms="hsqldb"/>
+
+    <changeSet author="zloy" id="190520181900">
+        <comment>
+            add table SESSIONS
+        </comment>
+        <sql>
+            CREATE TABLE SESSIONS (
+                PRIMARY_ID CHAR(36) NOT NULL,
+                SESSION_ID CHAR(36) NOT NULL,
+                CREATION_TIME BIGINT NOT NULL,
+                LAST_ACCESS_TIME BIGINT NOT NULL,
+                MAX_INACTIVE_INTERVAL INT NOT NULL,
+                EXPIRY_TIME BIGINT NOT NULL,
+                PRINCIPAL_NAME VARCHAR(100),
+                CONSTRAINT SESSION_PK PRIMARY KEY (PRIMARY_ID)
+            );
+
+        </sql>
+    </changeSet>
+
+    <changeSet author="zloy" id="190520181600">
+        <comment>
+            create Index
+        </comment>
+        <sql>
+            CREATE UNIQUE INDEX SESSION_IX1 ON SESSIONS (SESSION_ID);
+            CREATE INDEX SESSION_IX2 ON SESSIONS (EXPIRY_TIME);
+            CREATE INDEX SESSION_IX3 ON SESSIONS (PRINCIPAL_NAME);
+        </sql>
+    </changeSet>
+
+    <changeSet author="zloy" id="190520181800">
+        <comment>
+            add table SESSIONS_ATTRIBUTES
+        </comment>
+        <createTable tableName="SESSIONS_ATTRIBUTES">
+            <column name="session_primary_id" type="CHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ATTRIBUTE_NAME" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ATTRIBUTE_BYTES" type="${blob_type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="SESSIONS_ATTRIBUTES" columnNames="session_primary_id, ATTRIBUTE_NAME" constraintName="SESSION_ATTRIBUTES_PK"/>
+        <addForeignKeyConstraint baseTableName="SESSIONS_ATTRIBUTES" baseColumnNames="session_primary_id" constraintName="SESSION_ATTRIBUTES_FK" referencedTableName="SESSIONS"
+                                 referencedColumnNames="PRIMARY_ID" onDelete="CASCADE"/>
+
+    </changeSet>
+
+    <changeSet author="zloy (generated)" id="1513058108852-41">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_role"/>
+            </not>
+        </preConditions>
+        <comment>
+            initDB. create table user_role
+        </comment>
+        <createTable tableName="user_role">
+            <column autoIncrement="true" name="id" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="user_role_pkey"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="zloy" id="190520181801">
+        <comment>
+            add user
+        </comment>
+        <createTable tableName="users">
+            <column autoIncrement="true" name="id" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="users_pkey"/>
+            </column>
+            <column name="username" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_account_non_expired" type="boolean" defaultValueBoolean="true"/>
+            <column name="is_account_non_locked" type="boolean" defaultValueBoolean="true"/>
+            <column name="is_credentials_non_expired" type="boolean" defaultValueBoolean="true"/>
+            <column name="is_enabled" type="boolean" defaultValueBoolean="true"/>
+        </createTable>
+        <createIndex tableName="users" indexName="users_username_uindex" unique="true">
+            <column name="username" type="text"/>
+        </createIndex>
+        <createTable tableName="user_roles">
+            <column autoIncrement="true" name="id" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="user_roles_pkey"/>
+            </column>
+            <column name="users_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="user_roles" baseColumnNames="users_id"
+                                 constraintName="userRoles_users_FK" referencedTableName="users"
+                                 referencedColumnNames="id" />
+        <addForeignKeyConstraint baseTableName="user_roles" baseColumnNames="role_id"
+                                 constraintName="userRoles_userRole_FK" referencedTableName="user_role"
+                                 referencedColumnNames="id" />
+
+    </changeSet>
+
+    <changeSet author="zloy" id="190520181802">
+        <comment>
+            add roles
+        </comment>
+        <sql>
+            insert into user_role(name) values ('user'),('admin');
+        </sql>
+    </changeSet>
+
+    <changeSet author="zloy" id="190520181806">
+        <comment>
+            add column isReplacePass into table users
+        </comment>
+        <addColumn tableName="users">
+            <column name="is_replace_pass" defaultValue="true" type="boolean"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="zloy" id="310520181144">
+        <comment>
+            add user admin pass=123456
+        </comment>
+        <sql>
+            INSERT INTO users ( username, password) VALUES ('admin@resultant.com', '$2a$10$y1EZib/9a9hmQyZSNT0kNuKRbytqyA86adNvBuQ17C0vGOvRnbVGe');
+            INSERT INTO users ( username, password) VALUES ('user@resultant.com', '$2a$10$y1EZib/9a9hmQyZSNT0kNuKRbytqyA86adNvBuQ17C0vGOvRnbVGe');
+            insert into user_roles(users_id, role_id) select id, (select id from user_role where name='admin') from users where username='admin@resultant.com';
+            insert into user_roles(users_id, role_id) select id, (select id from user_role where name='user') from users where username='user@resultant.com';
+        </sql>
+    </changeSet>
+
+    <changeSet author="zloy" id="080520182130">
+        <comment>
+            add table courses
+        </comment>
+        <createTable tableName="courses">
+            <column autoIncrement="true" name="id" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="courses_pkey"/>
+            </column>
+            <column name="day" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="curs" type="numeric(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="bigint" />
+            <column name="ch_code" type="Text" />
+            <column name="name" type="Text" />
+            <column name="nom" type="bigint"/>
+        </createTable>
+        <createIndex tableName="courses" indexName="courses_day_uindex" >
+            <column name="day" type="date"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

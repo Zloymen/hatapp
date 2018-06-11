@@ -1,0 +1,64 @@
+==== Links
+= Getting Started With HAT APP REST service
+
+This is an example output for a service running at http://localhost:5550:
+
+Get currency
+
+.request
+include::{snippets}/currency/http-request.adoc[]
+.response
+include::{snippets}/currency/http-response.adoc[]
+.response fields
+include::{snippets}/currency/response-fields.adoc[]
+.curl
+include::{snippets}/currency/curl-request.adoc[]
+
+Get courses
+
+.request
+include::{snippets}/courses/http-request.adoc[]
+.request parameters
+include::{snippets}/courses/request-parameters.adoc[]
+.response
+include::{snippets}/courses/http-response.adoc[]
+.response fields
+include::{snippets}/courses/response-fields.adoc[]
+.curl
+include::{snippets}/courses/curl-request.adoc[]
+
+
+Get courses-dynamic
+
+.request
+include::{snippets}/courses-dynamic/http-request.adoc[]
+.request parameters
+include::{snippets}/courses-dynamic/request-parameters.adoc[]
+.response
+include::{snippets}/courses-dynamic/http-response.adoc[]
+.response fields
+include::{snippets}/courses-dynamic/response-fields.adoc[]
+.curl
+include::{snippets}/courses-dynamic/curl-request.adoc[]
+
+Login
+
+.request
+include::{snippets}/login/http-request.adoc[]
+.request parameters
+include::{snippets}/login/request-parameters.adoc[]
+.response
+include::{snippets}/login/http-response.adoc[]
+.response fields
+include::{snippets}/login/curl-request.adoc[]
+
+List all user
+
+.request
+include::{snippets}/list-user/http-request.adoc[]
+.response
+include::{snippets}/list-user/http-response.adoc[]
+.response fields
+include::{snippets}/list-user/response-fields.adoc[]
+.curl
+include::{snippets}/list-user/curl-request.adoc[]

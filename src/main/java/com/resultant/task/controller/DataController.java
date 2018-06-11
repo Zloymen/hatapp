@@ -32,6 +32,8 @@ public class DataController {
 
     private String[] orders;
 
+    private static final String CHAR_CODE = "VcharCode";
+
     @PostConstruct
     private void load(){
         log.info(order);
@@ -48,12 +50,12 @@ public class DataController {
         List<Map<String, String>> enums = client.getEnum();
 
         for(String currency : orders){
-            Optional<Map<String, String>> optional = enums.stream().filter(item ->  currency.equals(item.get("VcharCode"))).findFirst();
+            Optional<Map<String, String>> optional = enums.stream().filter(item ->  currency.equals(item.get(CHAR_CODE))).findFirst();
             optional.ifPresent(result::add);
         }
 
         enums.removeAll(result);
-        enums.sort(Comparator.comparing(item -> item.get("VcharCode") != null ? item.get("VcharCode") : "ZZZ"));
+        enums.sort(Comparator.comparing(item -> item.get(CHAR_CODE) != null ? item.get(CHAR_CODE) : "ZZZ"));
         result.addAll(enums);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
